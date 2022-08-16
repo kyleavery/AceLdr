@@ -32,7 +32,7 @@ This project would not have been possible without the following:
 
 
 ## Malleable C2 Profile requirements
-    sleepkit false;
+    sleepmask false;
     
 Other features and inspiration were taken from the following:
 - [https://www.arashparsa.com/bypassing-pesieve-and-moneta-the-easiest-way-i-could-find/](https://www.arashparsa.com/bypassing-pesieve-and-moneta-the-easiest-way-i-could-find/)
