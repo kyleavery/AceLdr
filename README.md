@@ -30,6 +30,10 @@ This project would not have been possible without the following:
 - [FOLIAGE](https://github.com/secidiot/FOLIAGE)
 - [x64 return address spoofing (source + explanation)](https://www.unknowncheats.me/forum/anti-cheat-bypass/268039-x64-return-address-spoofing-source-explanation.html)
 
+
+## Malleable C2 Profile requirements
+    sleepkit false;
+    
 Other features and inspiration were taken from the following:
 - [https://www.arashparsa.com/bypassing-pesieve-and-moneta-the-easiest-way-i-could-find/](https://www.arashparsa.com/bypassing-pesieve-and-moneta-the-easiest-way-i-could-find/)
 - [https://github.com/secidiot/TitanLdr](https://github.com/secidiot/TitanLdr)
