@@ -11,3 +11,9 @@ set BEACON_RDLL_GENERATE {
 
     return $ldr . $2;
 };
+
+
+set BEACON_RDLL_SIZE {
+	warn("========== Running 'BEACON_RDLL_SIZE' for DLL Name " . $1 . " with architecture " . $2);
+	return "100";
+}
