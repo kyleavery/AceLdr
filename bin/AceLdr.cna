@@ -8,6 +8,6 @@ set BEACON_RDLL_GENERATE {
         return $null;
     };
     warn("Loading custom user defined reflective loader from: " . $smpath);
-
-    return $ldr . $2;
+		
+    return setup_transformations($ldr . $2, $3);
 };
