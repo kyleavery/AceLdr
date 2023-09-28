@@ -130,14 +130,14 @@ SECTION( E ) VOID LdrProcessIat( PVOID image, PVOID directory )
                 for( ; Otd->u1.AddressOfData != 0 ; ++Otd, ++Ntd ) {
                     if( IMAGE_SNAP_BY_ORDINAL( Otd->u1.Ordinal ) ) {
                         if( NT_SUCCESS( Api.LdrGetProcedureAddress( Mod, NULL, IMAGE_ORDINAL( Otd->u1.Ordinal ), &Fcn ) ) ) {
-                            Ntd->u1.Function = Fcn;
+                            Ntd->u1.Function = ( ULONGLONG )Fcn;
                         };
                     } else {
                         Ibn = C_PTR( U_PTR( image ) + Otd->u1.AddressOfData );
                         Api.RtlInitAnsiString( &Ani, C_PTR( Ibn->Name ) );
 
                         if( NT_SUCCESS( Api.LdrGetProcedureAddress( Mod, &Ani, 0, &Fcn ) ) ) {
-                            Ntd->u1.Function = Fcn;
+                            Ntd->u1.Function = ( ULONGLONG )Fcn;
                         };
                     };
                 };
@@ -153,8 +153,8 @@ SECTION( E ) VOID LdrProcessRel( PVOID image, PVOID directory, PVOID imageBase )
     PIMAGE_RELOC                Rel = NULL;
     PIMAGE_BASE_RELOCATION      Ibr = NULL;
 
-    Ibr = C_PTR( directory );
-    Ofs = C_PTR( U_PTR( image ) - U_PTR( imageBase ) );
+    Ibr = ( PIMAGE_BASE_RELOCATION )( directory );
+    Ofs = U_PTR( U_PTR( image ) - U_PTR( imageBase ) );
 
     while ( Ibr->VirtualAddress != 0 ) {
         Rel = ( PIMAGE_RELOC )( Ibr + 1 );
@@ -197,7 +197,7 @@ SECTION( E ) VOID LdrHookImport( PVOID image, PVOID directory, ULONG hash, PVOID
 
                 if( Djb == hash )
                 {
-                    Ntd->u1.Function = C_PTR( function );
+                    Ntd->u1.Function = ( ULONGLONG )C_PTR( function );
                 };
             };
         };

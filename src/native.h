@@ -1,10 +1,6 @@
 #if !defined(_NTDLL_)
 #define _NTDLL_
 
-#pragma warning( disable:4001 )
-#pragma warning( disable:4201 )
-#pragma warning( disable:4214 )
-
 #if defined(__ICL)
 #pragma warning ( disable : 344 )
 #endif
@@ -9680,20 +9676,7 @@ typedef enum _TABLE_SEARCH_RESULT
 	TableInsertAsRight
 } TABLE_SEARCH_RESULT;
 
-typedef enum _RTL_GENERIC_COMPARE_RESULTS
-{
-	GenericLessThan,
-	GenericGreaterThan,
-	GenericEqual
-} RTL_GENERIC_COMPARE_RESULTS;
-
 struct _RTL_AVL_TABLE;
-
-typedef RTL_GENERIC_COMPARE_RESULTS (NTAPI *PRTL_AVL_COMPARE_ROUTINE)(
-	IN struct _RTL_AVL_TABLE *Table,
-	IN PVOID FirstStruct,
-	IN PVOID SecondStruct
-	);
 
 typedef PVOID (NTAPI *PRTL_AVL_ALLOCATE_ROUTINE)(
 	IN struct _RTL_AVL_TABLE *Table,
@@ -9712,14 +9695,6 @@ typedef NTSTATUS (NTAPI *PRTL_AVL_MATCH_FUNCTION)(
 	);
 
 typedef
-	RTL_GENERIC_COMPARE_RESULTS
-	(NTAPI *PRTL_AVL_COMPARE_ROUTINE) (
-	struct _RTL_AVL_TABLE *Table,
-	PVOID FirstStruct,
-	PVOID SecondStruct
-	);
-
-typedef
 	PVOID
 	(NTAPI *PRTL_AVL_ALLOCATE_ROUTINE) (
 	struct _RTL_AVL_TABLE *Table,
@@ -9735,28 +9710,6 @@ typedef
 	PVOID MatchData
 	);
 
-typedef
-	RTL_GENERIC_COMPARE_RESULTS
-	(NTAPI *PRTL_GENERIC_COMPARE_ROUTINE) (
-	struct _RTL_GENERIC_TABLE *Table,
-	PVOID FirstStruct,
-	PVOID SecondStruct
-	);
-
-typedef
-	PVOID
-	(NTAPI *PRTL_GENERIC_ALLOCATE_ROUTINE) (
-	struct _RTL_GENERIC_TABLE *Table,
-	ULONG ByteSize
-	);
-
-typedef
-	VOID
-	(NTAPI *PRTL_GENERIC_FREE_ROUTINE) (
-	struct _RTL_GENERIC_TABLE *Table,
-	PVOID Buffer
-	);
-
 typedef struct _RTL_BALANCED_LINKS
 {
 	struct _RTL_BALANCED_LINKS *Parent;
@@ -9765,34 +9718,6 @@ typedef struct _RTL_BALANCED_LINKS
 	CHAR Balance;
 	UCHAR Reserved[3];
 } RTL_BALANCED_LINKS, *PRTL_BALANCED_LINKS;
-
-typedef struct _RTL_AVL_TABLE
-{
-	RTL_BALANCED_LINKS BalancedRoot;
-	PVOID OrderedPointer;
-	ULONG WhichOrderedElement;
-	ULONG NumberGenericTableElements;
-	ULONG DepthOfTree;
-	PRTL_BALANCED_LINKS RestartKey;
-	ULONG DeleteCount;
-	PRTL_AVL_COMPARE_ROUTINE CompareRoutine;
-	PRTL_AVL_ALLOCATE_ROUTINE AllocateRoutine;
-	PRTL_AVL_FREE_ROUTINE FreeRoutine;
-	PVOID TableContext;
-} RTL_AVL_TABLE, *PRTL_AVL_TABLE;
-
-typedef struct _RTL_GENERIC_TABLE {
-	PRTL_SPLAY_LINKS TableRoot;
-	LIST_ENTRY InsertOrderList;
-	PLIST_ENTRY OrderedPointer;
-	ULONG WhichOrderedElement;
-	ULONG NumberGenericTableElements;
-	PRTL_GENERIC_COMPARE_ROUTINE CompareRoutine;
-	PRTL_GENERIC_ALLOCATE_ROUTINE AllocateRoutine;
-	PRTL_GENERIC_FREE_ROUTINE FreeRoutine;
-	PVOID TableContext;
-} RTL_GENERIC_TABLE;
-typedef RTL_GENERIC_TABLE *PRTL_GENERIC_TABLE;
 
 typedef struct _GENERATE_NAME_CONTEXT {
 
@@ -10086,8 +10011,6 @@ typedef struct _KLDR_DATA_TABLE_ENTRY
 #define RTL_HEAP_SETTABLE_FLAGS     (USHORT)0x00E0
 #define RTL_HEAP_UNCOMMITTED_RANGE  (USHORT)0x0100
 #define RTL_HEAP_PROTECTED_ENTRY    (USHORT)0x0200
-
-#pragma warning(disable: 4273) 
 
 typedef struct _DISPATCHER_HEADER
 {
@@ -11331,23 +11254,10 @@ typedef struct _RTL_PATCH_HEADER
 	HOTPATCH_MODULE_ENTRY HotpatchModuleEntry;
 } RTL_PATCH_HEADER, *PRTL_PATCH_HEADER;
 
-
-
-#pragma warning(default: 4273) 
-
 #ifndef _SLIST_HEADER_
 #define _SLIST_HEADER_
 
 #if defined(_M_X64)
-
-
-
-
-
-
-
-
-
 
 #pragma warning(push)
 #pragma warning(disable:4324)   
@@ -11389,10 +11299,6 @@ typedef union _SLIST_HEADER {
 
 #endif
 
-
-
-
-
 PSLIST_ENTRY
 __fastcall
 RtlInterlockedPushListSList (
@@ -11409,104 +11315,6 @@ RtlAssert(
 	IN PVOID VoidFileName,
 	IN ULONG LineNumber,
 	IN OPTIONAL PSTR MutableMessage
-    );
-
-VOID
-NTAPI
-RtlInitializeGenericTableAvl (
-    PRTL_AVL_TABLE Table,
-    PRTL_AVL_COMPARE_ROUTINE CompareRoutine,
-    PRTL_AVL_ALLOCATE_ROUTINE AllocateRoutine,
-    PRTL_AVL_FREE_ROUTINE FreeRoutine,
-    PVOID TableContext
-    );
-
-PVOID
-NTAPI
-RtlInsertElementGenericTableAvl (
-    PRTL_AVL_TABLE Table,
-    PVOID Buffer,
-    ULONG BufferSize,
-    PBOOLEAN NewElement OPTIONAL
-    );
-
-PVOID
-NTAPI
-RtlInsertElementGenericTableFullAvl (
-    PRTL_AVL_TABLE Table,
-    PVOID Buffer,
-    ULONG BufferSize,
-    PBOOLEAN NewElement OPTIONAL,
-    PVOID NodeOrParent,
-    TABLE_SEARCH_RESULT SearchResult
-    );
-
-BOOLEAN
-NTAPI
-RtlDeleteElementGenericTableAvl (
-    PRTL_AVL_TABLE Table,
-    PVOID Buffer
-    );
-
-PVOID
-NTAPI
-RtlLookupElementGenericTableAvl (
-    PRTL_AVL_TABLE Table,
-    PVOID Buffer
-    );
-
-PVOID
-NTAPI
-RtlLookupElementGenericTableFullAvl (
-    PRTL_AVL_TABLE Table,
-    PVOID Buffer,
-    OUT PVOID *NodeOrParent,
-    OUT TABLE_SEARCH_RESULT *SearchResult
-    );
-
-PVOID
-NTAPI
-RtlEnumerateGenericTableAvl (
-    PRTL_AVL_TABLE Table,
-    BOOLEAN Restart
-    );
-
-PVOID
-NTAPI
-RtlEnumerateGenericTableWithoutSplayingAvl (
-    PRTL_AVL_TABLE Table,
-    PVOID *RestartKey
-    );
-
-PVOID
-NTAPI
-RtlEnumerateGenericTableLikeADirectory (
-    IN PRTL_AVL_TABLE Table,
-    IN PRTL_AVL_MATCH_FUNCTION MatchFunction,
-    IN PVOID MatchData,
-    IN ULONG NextFlag,
-    IN OUT PVOID *RestartKey,
-    IN OUT PULONG DeleteCount,
-    IN OUT PVOID Buffer
-    );
-
-PVOID
-NTAPI
-RtlGetElementGenericTableAvl (
-    PRTL_AVL_TABLE Table,
-    ULONG I
-    );
-
-ULONG
-NTAPI
-RtlNumberGenericTableElementsAvl (
-    PRTL_AVL_TABLE Table
-    );
-
-BOOLEAN
-NTAPI
-RtlIsGenericTableEmptyAvl (
-    PRTL_AVL_TABLE Table
     );
 
 PRTL_SPLAY_LINKS
@@ -11550,92 +11358,6 @@ PRTL_SPLAY_LINKS
 NTAPI
 RtlRealPredecessor (
     PRTL_SPLAY_LINKS Links
-    );
-
-VOID
-NTAPI
-RtlInitializeGenericTable (
-    PRTL_GENERIC_TABLE Table,
-    PRTL_GENERIC_COMPARE_ROUTINE CompareRoutine,
-    PRTL_GENERIC_ALLOCATE_ROUTINE AllocateRoutine,
-    PRTL_GENERIC_FREE_ROUTINE FreeRoutine,
-    PVOID TableContext
-    );
-
-PVOID
-NTAPI
-RtlInsertElementGenericTable (
-    PRTL_GENERIC_TABLE Table,
-    PVOID Buffer,
-    ULONG BufferSize,
-    PBOOLEAN NewElement OPTIONAL
-    );
-
-PVOID
-NTAPI
-RtlInsertElementGenericTableFull (
-    PRTL_GENERIC_TABLE Table,
-    PVOID Buffer,
-    ULONG BufferSize,
-    PBOOLEAN NewElement OPTIONAL,
-    PVOID NodeOrParent,
-    TABLE_SEARCH_RESULT SearchResult
-    );
-
-BOOLEAN
-NTAPI
-RtlDeleteElementGenericTable (
-    PRTL_GENERIC_TABLE Table,
-    PVOID Buffer
-    );
-
-PVOID
-NTAPI
-RtlLookupElementGenericTable (
-    PRTL_GENERIC_TABLE Table,
-    PVOID Buffer
-    );
-
-PVOID
-NTAPI
-RtlLookupElementGenericTableFull (
-    PRTL_GENERIC_TABLE Table,
-    PVOID Buffer,
-    OUT PVOID *NodeOrParent,
-    OUT TABLE_SEARCH_RESULT *SearchResult
-    );
-
-PVOID
-NTAPI
-RtlEnumerateGenericTable (
-    PRTL_GENERIC_TABLE Table,
-    BOOLEAN Restart
-    );
-
-PVOID
-NTAPI
-RtlEnumerateGenericTableWithoutSplaying (
-    PRTL_GENERIC_TABLE Table,
-    PVOID *RestartKey
-    );
-
-PVOID
-NTAPI
-RtlGetElementGenericTable(
-    PRTL_GENERIC_TABLE Table,
-    ULONG I
-    );
-
-ULONG
-NTAPI
-RtlNumberGenericTableElements(
-    PRTL_GENERIC_TABLE Table
-    );
-
-BOOLEAN
-NTAPI
-RtlIsGenericTableEmpty (
-    PRTL_GENERIC_TABLE Table
     );
 
 NTSTATUS
@@ -12163,27 +11885,10 @@ RtlIpv4AddressToStringA (
 	OUT PSTR S
 	);
 
-PSTR
-NTAPI
-RtlIpv6AddressToStringA (
-	IN const struct in6_addr *Addr,
-	OUT PSTR S
-	);
-
 NTSTATUS
 NTAPI
 RtlIpv4AddressToStringExA(
     IN const struct in_addr *Address,
-    IN USHORT Port,
-    OUT PSTR AddressString,
-    IN OUT PULONG AddressStringLength
-    );
-
-NTSTATUS
-NTAPI
-RtlIpv6AddressToStringExA(
-    IN const struct in6_addr *Address,
-    IN ULONG ScopeId,
     IN USHORT Port,
     OUT PSTR AddressString,
     IN OUT PULONG AddressStringLength
@@ -12196,27 +11901,10 @@ RtlIpv4AddressToStringW (
     OUT PWSTR S
     );
 
-PWSTR
-NTAPI
-RtlIpv6AddressToStringW (
-    IN const struct in6_addr *Addr,
-    OUT PWSTR S
-    );
-
 NTSTATUS
 NTAPI
 RtlIpv4AddressToStringExW(
     IN const struct in_addr *Address,
-    IN USHORT Port,
-    OUT PWSTR AddressString,
-    IN OUT PULONG AddressStringLength
-    );
-
-NTSTATUS
-NTAPI
-RtlIpv6AddressToStringExW(
-    IN const struct in6_addr *Address,
-    IN ULONG ScopeId,
     IN USHORT Port,
     OUT PWSTR AddressString,
     IN OUT PULONG AddressStringLength
@@ -12233,27 +11921,10 @@ RtlIpv4StringToAddressA (
 
 NTSTATUS
 NTAPI
-RtlIpv6StringToAddressA (
-    IN PCSTR S,
-    OUT PCSTR *Terminator,
-    OUT struct in6_addr *Addr
-    );
-
-NTSTATUS
-NTAPI
 RtlIpv4StringToAddressExA (
     IN PCSTR AddressString,
     IN BOOLEAN Strict,
     OUT struct in_addr *Address,
-    OUT PUSHORT Port
-    );
-
-NTSTATUS
-NTAPI
-RtlIpv6StringToAddressExA (
-    IN PCSTR AddressString,
-    OUT struct in6_addr *Address,
-    OUT PULONG ScopeId,
     OUT PUSHORT Port
     );
 
@@ -12268,27 +11939,10 @@ RtlIpv4StringToAddressW (
 
 NTSTATUS
 NTAPI
-RtlIpv6StringToAddressW (
-    IN PCWSTR S,
-    OUT PCWSTR *Terminator,
-    OUT struct in6_addr *Addr
-    );
-
-NTSTATUS
-NTAPI
 RtlIpv4StringToAddressExW (
     IN PCWSTR AddressString,
     IN BOOLEAN Strict,
     OUT struct in_addr *Address,
-    OUT PUSHORT Port
-    );
-
-NTSTATUS
-NTAPI
-RtlIpv6StringToAddressExW (
-    IN PCWSTR AddressString,
-    OUT struct in6_addr *Address,
-    OUT PULONG ScopeId,
     OUT PUSHORT Port
     );
 
@@ -16672,11 +16326,11 @@ NtSetLdtEntries (
 NTSTATUS
 NTAPI
 NtQueueApcThread (
-    IN HANDLE                       ThreadHandle,
-    IN PIO_APC_ROUTINE              ApcRoutine,
-    IN OPTIONAL PVOID               ApcRoutineContext,
-    IN OPTIONAL PIO_STATUS_BLOCK    ApcStatusBlock,
-    IN OPTIONAL ULONG               ApcReserved
+    IN HANDLE           ThreadHandle,
+    IN PVOID            ApcRoutine,
+    IN OPTIONAL PVOID   ApcRoutineContext,
+    IN OPTIONAL PVOID 	ApcStatusBlock,
+    IN OPTIONAL PVOID   ApcReserved
     );
 
 NTSTATUS
@@ -20585,71 +20239,6 @@ DebugService2 (
     ULONG Service
     );
 
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlLargeIntegerAdd (
-    LARGE_INTEGER Addend1,
-    LARGE_INTEGER Addend2
-    );
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlEnlargedIntegerMultiply (
-    LONG Multiplicand,
-    LONG Multiplier
-    );
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlEnlargedUnsignedMultiply (
-    ULONG Multiplicand,
-    ULONG Multiplier
-    );
-
-__inline
-ULONG
-NTAPI
-RtlEnlargedUnsignedDivide (
-    IN ULARGE_INTEGER Dividend,
-    IN ULONG Divisor,
-    IN PULONG Remainder OPTIONAL
-    );
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlLargeIntegerNegate (
-    LARGE_INTEGER Subtrahend
-    );
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlLargeIntegerSubtract (
-    LARGE_INTEGER Minuend,
-    LARGE_INTEGER Subtrahend
-    );
-
-LARGE_INTEGER
-NTAPI
-RtlExtendedMagicDivide (
-    LARGE_INTEGER Dividend,
-    LARGE_INTEGER MagicDivisor,
-    CCHAR ShiftCount
-    );
-
-LARGE_INTEGER
-NTAPI
-RtlExtendedLargeIntegerDivide (
-    LARGE_INTEGER Dividend,
-    ULONG Divisor,
-    PULONG Remainder
-    );
-
 LARGE_INTEGER
 NTAPI
 RtlLargeIntegerDivide (
@@ -20664,56 +20253,6 @@ RtlExtendedIntegerMultiply (
     LARGE_INTEGER Multiplicand,
     LONG Multiplier
     );
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlConvertLongToLargeInteger (
-    LONG SignedInteger
-    );
-
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlConvertUlongToLargeInteger (
-    ULONG UnsignedInteger
-    );
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlLargeIntegerShiftLeft (
-    LARGE_INTEGER LargeInteger,
-    CCHAR ShiftCount
-    );
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlLargeIntegerShiftRight (
-    LARGE_INTEGER LargeInteger,
-    CCHAR ShiftCount
-    );
-
-
-__inline
-LARGE_INTEGER
-NTAPI
-RtlLargeIntegerArithmeticShift (
-    LARGE_INTEGER LargeInteger,
-    CCHAR ShiftCount
-    );
-
-
-__inline
-BOOLEAN
-NTAPI
-RtlCheckBit (
-    PRTL_BITMAP BitMapHeader,
-    ULONG BitPosition
-    );
-
 
 BOOLEAN
 NTAPI
@@ -22179,7 +21718,7 @@ typedef struct _CFG_CALL_TARGET_INFO {
 } CFG_CALL_TARGET_INFO, *PCFG_CALL_TARGET_INFO;
 #endif
 
-BOOLEAN
+WINBOOL
 WINAPI
 SetProcessValidCallTargets(
 	HANDLE					hProcess,

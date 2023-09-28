@@ -41,10 +41,16 @@ typedef struct __attribute__(( packed ))
     HANDLE    Heap;
 } STUB, *PSTUB ;
 
-static ULONG_PTR Start( VOID );
-static ULONG_PTR GetIp( VOID );
-static ULONG_PTR Stub( VOID );
-static ULONG_PTR Spoof( VOID );
+typedef struct {
+    const void* trampoline;     // always JMP RBX
+    void* function;             // Target Function
+    void* rbx;                  // Placeholder
+} PRM, *PPRM;
+
+extern ULONG_PTR Start( VOID );
+extern ULONG_PTR GetIp( VOID );
+extern ULONG_PTR Stub( VOID );
+extern PVOID     Spoof( PVOID, PVOID, PVOID, PVOID, PPRM, PVOID, PVOID, PVOID, PVOID, PVOID );
 
 
 #include "util.h"
